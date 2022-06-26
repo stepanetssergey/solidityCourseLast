@@ -6,21 +6,19 @@
 const hre = require("hardhat");
 
 async function main() {
-  // Hardhat always runs the compile task when running scripts with its command
-  // line interface.
-  //
-  // If this script is run directly using `node` you may want to call compile
-  // manually to make sure everything is compiled
-  // await hre.run('compile');
-
-  // We get the contract to deploy
-  const Greeter = await hre.ethers.getContractFactory("Greeter");
-  const greeter = await Greeter.deploy("Hello, Hardhat!");
-
-  await greeter.deployed();
-
-  console.log("Greeter deployed to:", greeter.address);
-}
+  const accounts = await hre.ethers.getSigners();
+  const UniswapV2Factory = await hre.ethers.ContractFactory("UniswapV2Factory");
+  const uniswapV2Factory = await UniswapV2Factory.deploy(accounts[0].address);
+  await uniswapV2Factory.deployed();
+  console.log("Factory contracrt:", uniswapV2Factory.address);
+  const WETH = await hre.ethers.ContractFactory("WETH");
+  const weth = await WETH.deploy()
+  await weth.deployed();
+  console.log("WETH:", weth.address)
+  const UniswapV2Router = await hre.ethers.ContractFactory("UniswapV2Router02")
+  const uniswapV2Router = await UniswapV2Router.deploy(uniswapV2Factory.address, weth.address);
+  await uniswapV2Factory.deployed();
+  console.log("Router:", uniswapV2Router.address)
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
