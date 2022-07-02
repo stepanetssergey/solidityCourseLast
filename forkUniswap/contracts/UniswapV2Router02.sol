@@ -27,9 +27,9 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
         WETH = _WETH;
     }
 
-    // receive() external payable {
-    //     assert(msg.sender == WETH); // only accept ETH via fallback from the WETH contract
-    // }
+     function () external payable {
+         assert(msg.sender == WETH); // only accept ETH via fallback from the WETH contract
+     }
 
     // **** ADD LIQUIDITY ****
     function _addLiquidity(

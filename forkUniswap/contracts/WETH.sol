@@ -14,7 +14,7 @@ contract WETH {
     mapping(address => uint256) public balanceOf;
     mapping(address => mapping(address => uint256)) public allowance;
 
-    function() external payable {
+    function fallback () external payable {
         deposit();
     }
 
