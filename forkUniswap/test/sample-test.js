@@ -43,7 +43,7 @@ describe("Uniswap", function () {
     await usdc.deployed();
     console.log("USDC Address", usdc.address);
 
-    prov = ethers.getDefaultProvider();
+    prov = ethers.provider; // Provider for swapping real ETH
   });
 
   // it("Get hash from bytecode", async function () {
@@ -54,7 +54,7 @@ describe("Uniswap", function () {
 
   it("Token-Token => Add liquidity / Swap / Remove liquidity", async function () {
     const totalSupply = await usdt.totalSupply();
-    let initBalanceAccount0USDT = await usdt.balanceOf(owner.address);
+    const initBalanceAccount0USDT = await usdt.balanceOf(owner.address);
     expect(+totalSupply).to.equal(1000000 * 10 ** 18);
     expect(+initBalanceAccount0USDT).to.equal(1000000 * 10 ** 18);
 
@@ -78,10 +78,10 @@ describe("Uniswap", function () {
     expect(pairCountAfterAdding).to.equal(1);
 
     const pairAddressAfter = await uniswapV2Factory.getPair(usdt.address, usdc.address);
-    expect(pairAddressAfter).to.not.equal('0x0000000000000000000000000000000000000000'); // different pairAddress after transaction
+    expect(pairAddressAfter).to.not.equal('0x0000000000000000000000000000000000000000'); // pairAddress created after addLiquidity
 
     // amountOut = amountIn * reservedOut / reservedIn + amountIn;      x = 10USDT * 100USDC / 100USDT + 10USDT = 9,09  (2.2 - 47:00)
-    let getAmountsOut = await uniswapV2Router.getAmountsOut((10 * 10 ** 18).toString(), [usdt.address, usdc.address]);
+    const getAmountsOut = await uniswapV2Router.getAmountsOut((10 * 10 ** 18).toString(), [usdt.address, usdc.address]);
     const swapTx = await uniswapV2Router.swapExactTokensForTokens(
       getAmountsOut[0].toString(), // 10 * 10 ** 18
       getAmountsOut[1].toString(), // 9,06 * 10 ** 18
@@ -90,33 +90,30 @@ describe("Uniswap", function () {
       0
     )
     await swapTx.wait();
-    let balanceAccount0USDT = await usdt.balanceOf(owner.address);
-    let balanceAccount1USDC = await usdc.balanceOf(addr1.address);
-    // expect(balanceAccount0USDT.toString()).to.equal((initBalanceAccount0USDT - 100 * 10 ** 18 - 10 * 10 ** 18).toString()); // AssertionError: expected '999890000000000000000000' to equal '9.9989e+23'
+    const balanceAccount1USDC = await usdc.balanceOf(addr1.address);
     expect(balanceAccount1USDC.toString()).to.equal(getAmountsOut[1].toString());
 
-    await usdt.approve(uniswapV2Router.address, (230 * 10 ** 18).toString());
-
     const contractLP = new ethers.Contract(pairAddressAfter, abiERC20, owner);
-    let balanceAccount0LP = await contractLP.balanceOf(owner.address);
-    // console.log(5555, balanceAccount0LP)
-    await contractLP.approve(uniswapV2Router.address, (230 * 10 ** 18).toString());
+    const balanceAccount0LPBefore = await contractLP.balanceOf(owner.address);
+    await contractLP.approve(uniswapV2Router.address, (230 * 10 ** 18).toString()); // Approve on Liquidity of pair (usdt-usdc)
 
-    const removedLiquidityData = await uniswapV2Router.removeLiquidity( // FAIL: reverted with reason string 'ds-math-sub-underflow'
+    const removedLiquidity = (19 * 10 ** 18).toString();
+    const removedLiquidityData = await uniswapV2Router.removeLiquidity(
       usdt.address,
       usdc.address,
-      (90 * 10 ** 18).toString(),
+      removedLiquidity,
       0,
       0,
       owner.address,
       0 // Comment UniswapV2Router02->ensure->require
     );
     await removedLiquidityData.wait();
+    const balanceAccount0LP = await contractLP.balanceOf(owner.address);
+    expect(balanceAccount0LP.toString()).to.equal(balanceAccount0LPBefore.sub(removedLiquidity).toString());
   });
 
   it("Token-ETH => Add liquidity / Swap / Remove liquidity", async function () {
     await usdt.approve(uniswapV2Router.address, (230 * 10 ** 18).toString());
-    // await weth.approve(uniswapV2Router.address, (230).toString());
 
     const liquidityData = await uniswapV2Router.addLiquidityETH(
       usdt.address,
@@ -129,26 +126,41 @@ describe("Uniswap", function () {
     await liquidityData.wait();
     const pairCountAfterAdding = await uniswapV2Factory.allPairsLength();
     expect(pairCountAfterAdding).to.equal(2);
-    const pairUSDTWETH = await uniswapV2Factory.getPair(usdt.address, weth.address);
-    let balanceAccountRouterWETH = await weth.balanceOf(pairUSDTWETH);
-    const balanceAccountUSDTWETH = await prov.getBalance(weth.address);
-    console.log(11111, balanceAccountUSDTWETH)
 
-    await usdt.approve(uniswapV2Router.address, (230 * 10 ** 18).toString());
+    // const pairUSDTWETH = await uniswapV2Factory.getPair(usdt.address, weth.address);
+    // let balanceAccountRouterWETH = await weth.balanceOf(pairUSDTWETH);
+    // const balanceAccountUSDTWETH = await prov.getBalance(weth.address);
+    // console.log(11111, balanceAccountRouterWETH, balanceAccountUSDTWETH)
+
     let getAmountsOut = await uniswapV2Router.getAmountsOut((10 * 10 ** 18).toString(), [usdt.address, weth.address]);
     const balanceAccount2WETHBefore = await prov.getBalance(addr2.address);
-    console.log(2222, balanceAccount2WETHBefore)
-    const swapTx = await uniswapV2Router.swapExactTokensForETH( // FAIL: function selector was not recognized and there's no fallback function
+    const swapTx = await uniswapV2Router.swapExactTokensForETH(
       getAmountsOut[0].toString(), // 10 * 10 ** 18
-      0, // 9,06 * 10 ** 18
+      getAmountsOut[1].toString(), // 9,06 * 10 ** 18
       [usdt.address, weth.address],
       addr2.address,
       0
     )
     await swapTx.wait();
-    let balanceAccount0USDT = await usdt.balanceOf(owner.address);
     const balanceAccount2WETH = await prov.getBalance(addr2.address);
+    expect(balanceAccount2WETH.toString()).to.equal(balanceAccount2WETHBefore.add(getAmountsOut[1]).toString());
 
-    console.log(3333, balanceAccount2WETH.toString())
+    const pairAddressAfter = await uniswapV2Factory.getPair(usdt.address, weth.address);
+    const contractLP = new ethers.Contract(pairAddressAfter, abiERC20, owner);
+    const balanceAccount0LPBefore = await contractLP.balanceOf(owner.address);
+    await contractLP.approve(uniswapV2Router.address, (230 * 10 ** 18).toString()); // Approve on Liquidity of pair (usdt-weth)
+
+    const removedLiquidity = (19 * 10 ** 18).toString();
+    const removedLiquidityData = await uniswapV2Router.removeLiquidityETH( // FAIL: reverted with reason string 'ds-math-sub-underflow'
+      usdt.address,
+      removedLiquidity,
+      0,
+      0,
+      owner.address,
+      0 // Comment UniswapV2Router02->ensure->require
+    );
+    await removedLiquidityData.wait();
+    const balanceAccount0LP = await contractLP.balanceOf(owner.address);
+    expect(balanceAccount0LP.toString()).to.equal(balanceAccount0LPBefore.sub(removedLiquidity).toString());
   });
 });
