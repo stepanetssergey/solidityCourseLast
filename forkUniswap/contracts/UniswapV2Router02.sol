@@ -16,7 +16,7 @@ contract UniswapV2Router02 is IUniswapV2Router02 {
     address public   WETH;
 
     modifier ensure(uint deadline) {
-        require(deadline >= block.timestamp, 'UniswapV2Router: EXPIRED');
+        //require(deadline >= block.timestamp, 'UniswapV2Router: EXPIRED');
         _;
     }
 
