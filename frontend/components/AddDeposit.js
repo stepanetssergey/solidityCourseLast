@@ -4,10 +4,14 @@ import { Contract } from "@ethersproject/contracts";
 import { Config } from "../config";
 import Spinner from "../components/Spinner";
 import depositABI from "../config/tokenDeposit.json";
+import { useDispatch, useSelector } from "react-redux";
+import { depositActionCreator } from "../store/reducers/addDeposit/action-creators";
+
 
 const AddDeposit = () => {
   const [currentDepositValue, setCurrentDepositValue] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const { depositIsLoading } = useSelector(state => state.depositReducer);
+  const dispatch = useDispatch();
   const context = useWeb3React();
   const { library, account, active } = context;
 
@@ -15,20 +19,13 @@ const AddDeposit = () => {
     setCurrentDepositValue(e.target.value);
   };
 
-  const handleAddDeposit = async () => {
+  const handleAddDeposit = () => {
     console.log("Add value to contract");
     if (!active) {
       return;
     }
-    const addDepositContract = new Contract(
-      Config().tokenDepositAddress,
-      depositABI.abi,
-      library.getSigner(account).connectUnchecked()
-    );
-    const trx = await addDepositContract.addDeposit(currentDepositValue);
-    setIsLoading(true);
-    await trx.wait();
-    setIsLoading(false);
+   dispatch(depositActionCreator.addDeposit(library.getSigner(account).connectUnchecked(), currentDepositValue))
+   //dispatch(depositActionCreator.addDeposit())
   };
   return (
     <div className="deposit-value">
@@ -39,7 +36,7 @@ const AddDeposit = () => {
         onChange={handleChangeValue}
       />
       <button onClick={handleAddDeposit}>
-        {isLoading ? <Spinner /> : "Add deposit"}
+        {depositIsLoading ? <Spinner /> : "Add deposit"}
       </button>
     </div>
   );
