@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, createContext, useContext } from "react";
 import { useWeb3React } from "@web3-react/core";
 import { Contract } from "@ethersproject/contracts";
 import { Config } from "../config";
@@ -6,6 +6,7 @@ import Spinner from "../components/Spinner";
 import depositABI from "../config/tokenDeposit.json";
 import { useDispatch, useSelector } from "react-redux";
 import { depositActionCreator } from "../store/reducers/addDeposit/action-creators";
+import {DepositContext} from "../hooks/DepositContext";
 
 
 const AddDeposit = () => {
@@ -14,6 +15,7 @@ const AddDeposit = () => {
   const dispatch = useDispatch();
   const context = useWeb3React();
   const { library, account, active } = context;
+  const makeDeposit = useContext(DepositContext);
 
   const handleChangeValue = (e) => {
     setCurrentDepositValue(e.target.value);
@@ -24,8 +26,8 @@ const AddDeposit = () => {
     if (!active) {
       return;
     }
-   dispatch(depositActionCreator.addDeposit(library.getSigner(account).connectUnchecked(), currentDepositValue))
-   //dispatch(depositActionCreator.addDeposit())
+    // dispatch(depositActionCreator.addDeposit(library.getSigner(account).connectUnchecked(), currentDepositValue))
+    makeDeposit(currentDepositValue);
   };
   return (
     <div className="deposit-value">

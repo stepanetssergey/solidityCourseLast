@@ -31,9 +31,9 @@ module.exports = {
     },
     local: {
       url: "http://localhost:8545",
-      accounts: [
-        "42d9c74ceb536de4b6839acf3c85a726b7168c1af0214e6f6490bd8e10561198",
-      ],
+      // accounts: [
+      //   "42d9c74ceb536de4b6839acf3c85a726b7168c1af0214e6f6490bd8e10561198",
+      // ],
     },
   },
   gasReporter: {
