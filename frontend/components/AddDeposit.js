@@ -7,6 +7,7 @@ import depositABI from "../config/tokenDeposit.json";
 import { useDispatch, useSelector } from "react-redux";
 import { depositActionCreator } from "../store/reducers/addDeposit/action-creators";
 import {DepositContext} from "../hooks/DepositContext";
+import useMakeDeposit from "../hooks/useMakeDeposit";
 
 
 const AddDeposit = () => {
@@ -27,7 +28,7 @@ const AddDeposit = () => {
       return;
     }
     // dispatch(depositActionCreator.addDeposit(library.getSigner(account).connectUnchecked(), currentDepositValue))
-    makeDeposit(currentDepositValue);
+    useMakeDeposit(currentDepositValue);
   };
   return (
     <div className="deposit-value">
