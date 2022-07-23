@@ -26,6 +26,6 @@ describe("Farming", function () {
 
       it("Check first pool", async () => {
         const pool = await farming.Pools(1)
-        expect(ethers.utils.formatEther(pool.tokensPerBlock)).to.equal(100)
+        expect(ethers.utils.formatEther(pool.tokensPerBlock)).to.equal("100.0")
       })
 });
