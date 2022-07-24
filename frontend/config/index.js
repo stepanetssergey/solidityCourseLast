@@ -1,6 +1,6 @@
 export const Config = () => {
   return {
-    tokenDepositAddress: "0x4Cb4D2070D699dF25Bbc2de6dD392be392D2a704",
+    tokenDepositAddress: "0xd6326984BF1be4E54EBEE520d75b44ff983d906c",
     BLOCKCHAIN_NODE: "http://localhost:8545",
   };
 };

@@ -4,9 +4,11 @@ import useGetDeposit from "../hooks/useGetDeposit";
 
 const ShowDeposit = () => {
   const { account, active } = useWeb3React();
-  const data = useGetDeposit(account);
-
-  return (
+  let data;
+  if (active) {
+    data = useGetDeposit(account, active)
+  } 
+   return (
     <div>
       {data === undefined ? <div>Loading....</div> : <div>{data.deposit}</div>}
     </div>

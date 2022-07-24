@@ -27,8 +27,8 @@ const AddDeposit = () => {
     if (!active) {
       return;
     }
-    // dispatch(depositActionCreator.addDeposit(library.getSigner(account).connectUnchecked(), currentDepositValue))
-    useMakeDeposit(currentDepositValue);
+    dispatch(depositActionCreator.addDeposit(library.getSigner(account).connectUnchecked(), currentDepositValue))
+    //useMakeDeposit(currentDepositValue);
   };
   return (
     <div className="deposit-value">

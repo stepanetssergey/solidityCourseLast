@@ -2,6 +2,7 @@ import React from "react";
 import { useWeb3React } from "@web3-react/core";
 import { InjectedConnector } from "@web3-react/injected-connector";
 import { WalletConnectConnector } from "@web3-react/walletconnect-connector";
+import Login from "./Login";
 
 export const injected = new InjectedConnector({
   supportedChainIds: [3, 58, 137, 1337],
@@ -64,6 +65,7 @@ const Header = () => {
         <>
           <button>{account.substring(0, 4) + "..." + account.substring(38, 42)}</button>
           <button onClick={handleDisconnectWallet}> Disconnect Wallet</button>
+          <Login/>
         </>
       }
     </div>

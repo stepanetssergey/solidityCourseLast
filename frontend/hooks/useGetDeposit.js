@@ -3,7 +3,7 @@ import Web3 from "web3";
 import { Config } from "../config";
 import tokenDepoistABI from "../config/tokenDeposit.json";
 
-export default function useTokenDepositContract(account) {
+export default function useTokenDepositContract(account, active) {
   const [data, setData] = React.useState();
 
   const contract = React.useMemo(() => {
@@ -24,11 +24,14 @@ export default function useTokenDepositContract(account) {
   const getTokenDepositData = React.useCallback(async () => {
     console.log(contract);
     //try {
-    var userDeposit = await contract.methods
-      .Users("0xbAb3Eb591624B8309FB45e4E5ACC098A04B7bc83")
-      .call(); //get round id
-    console.log(userDeposit);
-    setData(userDeposit);
+      
+        var userDeposit = await contract.methods
+        .Users(account)
+        .call(); //get round id
+        console.log(userDeposit);
+        setData(userDeposit);
+      
+    
     // } catch (e) {
     //   console.log(e)
     //   setData({});
